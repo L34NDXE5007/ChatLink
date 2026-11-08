@@ -435,6 +435,7 @@ function fbErrMsg(e){
     "auth/email-already-in-use":"Cet identifiant est déjà pris.",
     "auth/invalid-email":"Identifiant invalide.",
     "auth/weak-password":"Mot de passe trop faible (6 caractères minimum).",
+    "auth/requires-recent-login":"Pour des raisons de sécurité, reconnecte-toi puis réessaie.",
     "auth/operation-not-allowed":"Inscription désactivée : dans la console Firebase, active Authentication > Méthode de connexion > E-mail/Mot de passe.",
     "auth/operation-not-supported-in-this-environment":"Firebase ne marche pas depuis un fichier local : héberge la page en https (GitHub Pages, Netlify, Firebase Hosting).",
     "auth/unauthorized-domain":"Domaine non autorisé : ajoute-le dans Firebase > Authentication > Paramètres > Domaines autorisés.",
@@ -796,6 +797,48 @@ document.getElementById("register-form").addEventListener("submit",async e=>{
     console.warn("ChatLink: Firebase Auth marche mal en fichier local. Héberge le HTML en https.");
   }
 })();
+/* Vérifie le mot de passe auprès de Firebase (true / false). Lève une erreur en cas de souci réseau. */
+async function fbCheckPassword(pw){
+  const u=fbAuth.currentUser;
+  const cred=firebase.auth.EmailAuthProvider.credential(u.email,pw);
+  try{
+    await u.reauthenticateWithCredential(cred);
+    return true;
+  }catch(e){
+    if(["auth/wrong-password","auth/invalid-credential","auth/invalid-login-credentials"].includes(e.code)) return false;
+    throw e;
+  }
+}
+/* Supprime le compte dans Firebase : profil, amis, demandes, groupes, puis le compte de connexion */
+async function deleteCloudAccount(id){
+  stopFbListeners();
+  try{
+    const FV=firebase.firestore.FieldValue;
+    const ops=[];
+    getFriends(id).forEach(fid=>ops.push(fbDb.collection("friends").doc(fid).set({list:FV.arrayRemove(id)},{merge:true})));
+    const reqs=getReqMap();
+    Object.keys(reqs).forEach(to=>{
+      if(to!==id&&(reqs[to]||[]).includes(id)) ops.push(fbDb.collection("requests").doc(to).set({list:FV.arrayRemove(id)},{merge:true}));
+    });
+    const groups=getGroups();
+    Object.values(groups).forEach(g=>{
+      if(!g||!(g.members||[]).some(m=>m.id===id)) return;
+      const rest=(g.members||[]).filter(m=>m.id!==id).map(m=>({...m}));
+      if(rest.length){
+        if(!rest.some(m=>m.admin)) rest[0].admin=true;
+        ops.push(fbDb.collection("groups").doc(g.id).set({...cleanGroup({...g,members:rest}),updatedAt:Date.now()}));
+      }else ops.push(fbDb.collection("groups").doc(g.id).delete());
+    });
+    ops.push(fbDb.collection("users").doc(id).delete());
+    ops.push(fbDb.collection("friends").doc(id).delete());
+    ops.push(fbDb.collection("requests").doc(id).delete());
+    await Promise.all(ops);
+    await fbAuth.currentUser.delete();
+  }catch(e){
+    startFbSync();
+    throw e;
+  }
+}
 async function cacheProfiles(ids){
   const users=getUsers();let ch=false;
   await Promise.all(ids.filter(id=>!users[id]).map(async id=>{
@@ -1614,7 +1657,14 @@ function renderSheet(){
     sheet.querySelector("#do-delete").onclick=async()=>{
       const pw=sheet.querySelector("#del-pw").value;const er=sheet.querySelector("#del-err");
       if(!pw){er.textContent="Entrez votre mot de passe.";return}
-      if(await hashPassword(pw)!==u.password){er.textContent="Mot de passe incorrect.";return}
+      const delBtn=sheet.querySelector("#do-delete");
+      if(fbReady&&fbAuth&&fbAuth.currentUser){
+        delBtn.disabled=true;er.textContent="";
+        try{
+          if(!(await fbCheckPassword(pw))){er.textContent="Mot de passe incorrect.";delBtn.disabled=false;return}
+          await deleteCloudAccount(u.id);
+        }catch(e){console.warn(e);er.textContent=fbErrMsg(e);delBtn.disabled=false;return}
+      }else if(await hashPassword(pw)!==u.password){er.textContent="Mot de passe incorrect.";return}
       const users=getUsers();delete users[u.id];save(STORAGE.users,users);
       const fr=load(STORAGE.friends,{});delete fr[u.id];Object.keys(fr).forEach(k=>{fr[k]=(fr[k]||[]).filter(x=>x!==u.id)});save(STORAGE.friends,fr);
       const rq=getReqMap();delete rq[u.id];Object.keys(rq).forEach(k=>{rq[k]=(rq[k]||[]).filter(x=>x!==u.id)});save(STORAGE.requests,rq);
@@ -1663,10 +1713,17 @@ async function saveEdit(){
   if(!/^[a-z0-9_]{3,20}$/.test(nid)){er.textContent="Identifiant invalide.";return}
   if(nw||cf||cur){
     if(!cur){er.textContent="Veuillez entrer votre mot de passe pour changer celui-ci";return}
-    if(await hashPassword(cur)!==currentUser.password){er.textContent="Mot de passe actuel incorrect.";return}
+    const useFb=fbReady&&fbAuth&&fbAuth.currentUser;
+    if(useFb){
+      let ok=false;
+      try{ok=await fbCheckPassword(cur)}catch(e){console.warn(e);er.textContent=fbErrMsg(e);return}
+      if(!ok){er.textContent="Mot de passe actuel incorrect.";return}
+    }else if(await hashPassword(cur)!==currentUser.password){er.textContent="Mot de passe actuel incorrect.";return}
     if(nw.length<6){er.textContent="Nouveau mot de passe trop court.";return}
     if(nw!==cf){er.textContent="Les mots de passe ne correspondent pas.";return}
-    currentUser.password=await hashPassword(nw);
+    if(useFb){
+      try{await fbAuth.currentUser.updatePassword(nw)}catch(e){console.warn(e);er.textContent=fbErrMsg(e);return}
+    }else currentUser.password=await hashPassword(nw);
   }
   const users=getUsers();
   if(nid!==currentUser.id){
