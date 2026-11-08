@@ -1685,7 +1685,8 @@ function renderSheet(){
         <div class="field-label">Pseudo (vu par les utilisateurs)</div>
         <input class="pill-input" id="edit-display" value="${esc(u.displayName)}">
         <div class="field-label" style="margin-top:10px">Identifiant unique</div>
-        <input class="pill-input" id="edit-id" value="${esc(u.id)}">
+        <input class="pill-input" id="edit-id" value="${esc(u.id)}" readonly aria-readonly="true" style="opacity:.55;cursor:not-allowed">
+        <p style="font-size:12px;color:var(--muted);margin:4px 0 0">L'identifiant ne peut pas être modifié.</p>
         <p style="margin-top:16px;font-weight:600">Changer de mot de passe</p>
         <p style="font-size:12px;color:var(--muted);margin:4px 0 8px">Veuillez entrer votre mot de passe pour changer celui-ci</p>
         <div class="field-label">Mot de passe actuel</div><input class="pill-input" id="pw-cur" type="password">
@@ -1707,10 +1708,9 @@ document.getElementById("avatar-file").onchange=e=>{
 async function saveEdit(){
   const er=sheet.querySelector("#edit-err");er.textContent="";
   const display=sheet.querySelector("#edit-display").value.trim();
-  const nid=sheet.querySelector("#edit-id").value.trim().toLowerCase();
+  const nid=currentUser.id; // l'identifiant n'est pas modifiable
   const cur=sheet.querySelector("#pw-cur").value,nw=sheet.querySelector("#pw-new").value,cf=sheet.querySelector("#pw-conf").value;
   if(!display){er.textContent="Pseudo invalide.";return}
-  if(!/^[a-z0-9_]{3,20}$/.test(nid)){er.textContent="Identifiant invalide.";return}
   if(nw||cf||cur){
     if(!cur){er.textContent="Veuillez entrer votre mot de passe pour changer celui-ci";return}
     const useFb=fbReady&&fbAuth&&fbAuth.currentUser;
