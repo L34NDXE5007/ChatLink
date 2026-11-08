@@ -45,6 +45,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--fg);height:100dvh;
 .color-sheet:not(.hidden){animation:cl-slide-up .28s cubic-bezier(.2,.85,.2,1) both}
 .color-dim:not(.hidden){animation:cl-fade .2s ease both}
 .toast{animation:cl-toast .28s cubic-bezier(.2,.85,.2,1) both}
+@keyframes cl-slide-down{from{transform:none;opacity:1}to{transform:translateY(110%);opacity:0}}
+@keyframes cl-pop-out{from{opacity:1;transform:none}to{opacity:0;transform:scale(.92)}}
+@keyframes cl-toast-out{from{opacity:1;transform:none}to{opacity:0;transform:translateX(24px)}}
+.color-sheet.leaving{animation:cl-slide-down .22s cubic-bezier(.4,0,1,1) both!important;pointer-events:none!important}
+.color-dim.leaving{animation:cl-fade-out .22s ease both!important;pointer-events:none!important}
+.attach-menu.leaving{animation:cl-pop-out .18s ease both!important;pointer-events:none!important}
+.toast.leaving{animation:cl-toast-out .28s cubic-bezier(.4,0,1,1) both!important}
 .attach-menu:not(.hidden),
 .dialog:not(.hidden),
 .menu-pop:not(.hidden){animation:cl-pop .2s cubic-bezier(.2,.85,.2,1) both}
@@ -585,6 +592,23 @@ function outgoingFor(uid){const a=getReqMap();return Object.keys(a).filter(to=>(
 function getOutSeen(uid){const a=load(STORAGE.outSeen,{});return Object.prototype.hasOwnProperty.call(a,uid)?a[uid]:null}
 function setOutSeen(uid,list){const a=load(STORAGE.outSeen,{});a[uid]=list;save(STORAGE.outSeen,a)}
 
+function showAnimated(el){
+  if(!el) return;
+  clearTimeout(el._hideT);
+  el.classList.remove("leaving");
+  el.classList.remove("hidden");
+}
+function hideAnimated(el, after){
+  if(!el) return;
+  if(el.classList.contains("hidden")){ if(after) after(); return }
+  if(el.classList.contains("leaving")) return;
+  el.classList.add("leaving");
+  el._hideT=setTimeout(()=>{
+    el.classList.add("hidden");
+    el.classList.remove("leaving");
+    if(after) after();
+  },220);
+}
 function closeOverlayEl(el, after){
   if(!el||el.classList.contains("hidden")){if(after)after();return}
   if(el.classList.contains("closing"))return;
@@ -604,9 +628,7 @@ function showToast(text){
   el.innerHTML=`<span class="toast-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span><span>${esc(text)}</span>`;
   wrap.appendChild(el);
   setTimeout(()=>{
-    el.style.transition="opacity .28s ease, transform .28s ease";
-    el.style.opacity="0";
-    el.style.transform="translateX(16px)";
+    el.classList.add("leaving");
     setTimeout(()=>{if(el.parentNode)el.remove()},300);
   },4700);
 }
@@ -1142,10 +1164,13 @@ document.getElementById("message-form").onsubmit=e=>{
   document.getElementById("message-input").value="";renderMessages();
 };
 const attachMenu=document.getElementById("attach-menu");
-document.getElementById("plus-btn").onclick=()=>attachMenu.classList.toggle("hidden");
-document.getElementById("btn-media").onclick=()=>{attachMenu.classList.add("hidden");document.getElementById("media-file").click()};
-document.getElementById("btn-files").onclick=()=>{attachMenu.classList.add("hidden");document.getElementById("any-file").click()};
-document.getElementById("btn-polls").onclick=()=>{attachMenu.classList.add("hidden");openPollPage()};
+document.getElementById("plus-btn").onclick=()=>{
+  if(attachMenu.classList.contains("hidden")||attachMenu.classList.contains("leaving")) showAnimated(attachMenu);
+  else hideAnimated(attachMenu);
+};
+document.getElementById("btn-media").onclick=()=>{hideAnimated(attachMenu);document.getElementById("media-file").click()};
+document.getElementById("btn-files").onclick=()=>{hideAnimated(attachMenu);document.getElementById("any-file").click()};
+document.getElementById("btn-polls").onclick=()=>{hideAnimated(attachMenu);openPollPage()};
 function sendPickedFile(file){
   if(!file||!inChat())return;
   if(file.size>900000){alert("Fichier trop lourd (max 900 Ko).");return}
@@ -1377,14 +1402,14 @@ function renderGroupColorSheet(){
   const cs=document.getElementById("group-color-sheet");
   const dim=document.getElementById("group-color-dim");
   if(!groupInfoPalette||!groupEdit){
-    cs.classList.add("hidden");
-    if(dim)dim.classList.add("hidden");
+    hideAnimated(cs);
+    if(dim)hideAnimated(dim);
     return;
   }
   const banner=groupEdit.banner||"#1d3eb2";
-  cs.classList.remove("hidden");
+  showAnimated(cs);
   if(dim){
-    dim.classList.remove("hidden");
+    showAnimated(dim);
     dim.onclick=()=>{groupInfoPalette=false;renderGroupInfo()};
   }
   cs.innerHTML=`<p class="color-title">Couleur de la bannière</p>${paletteRows(banner)}`;
@@ -1615,13 +1640,13 @@ function renderColorSheet(){
   const banner=currentUser.banner||"#1d3eb2";
   const dim=document.getElementById("color-dim");
   if(!paletteOpen || profileView!=="edit"){
-    colorSheet.classList.add("hidden");
-    if(dim)dim.classList.add("hidden");
+    hideAnimated(colorSheet);
+    if(dim)hideAnimated(dim);
     return;
   }
-  colorSheet.classList.remove("hidden");
+  showAnimated(colorSheet);
   if(dim){
-    dim.classList.remove("hidden");
+    showAnimated(dim);
     dim.onclick=()=>{paletteOpen=false;renderSheet()};
   }
   colorSheet.innerHTML=`<p class="color-title">Couleur de la bannière</p>${paletteRows(banner)}`;
