@@ -445,11 +445,12 @@ function fbErrMsg(e){
   return map[c]||("Erreur"+(c?" ("+c+")":"")+" : "+((e&&e.message)||e));
 }
 function dmKey(a,b){return [a,b].sort().join("_")}
-let unsubMsgs=null, unsubFriends=null, unsubUser=null;
+let unsubMsgs=null, unsubFriends=null, unsubUser=null, unsubGroups=null;
 function stopFbListeners(){
   if(unsubMsgs){try{unsubMsgs()}catch(_){} unsubMsgs=null}
   if(unsubFriends){try{unsubFriends()}catch(_){} unsubFriends=null}
   if(unsubUser){try{unsubUser()}catch(_){} unsubUser=null}
+  if(unsubGroups){try{unsubGroups()}catch(_){} unsubGroups=null}
 }
 async function fbUpsertUser(id, data){
   if(!fbReady)return;
@@ -525,7 +526,7 @@ async function fbPullBootstrap(uid){
     const gs=await fbGetGroupsFor(uid);
     if(gs.length){
       const all=getGroups();
-      gs.forEach(g=>{ if(g&&g.id) all[g.id]=g; });
+      gs.forEach(g=>{ if(g&&g.id){ g._cloud=true; all[g.id]=g; } });
       saveGroups(all);
     }
   }catch(e){console.warn("groups pull",e)}
@@ -555,6 +556,16 @@ function cloudList(col,docId,op,val){
   const FV=firebase.firestore.FieldValue;
   fbDb.collection(col).doc(docId).set({list:op==="add"?FV.arrayUnion(val):FV.arrayRemove(val),updatedAt:Date.now()},{merge:true})
     .catch(e=>{console.warn("Firestore",col,e);showToast("Erreur Firebase : "+fbErrMsg(e))});
+}
+function cleanGroup(g){const c=JSON.parse(JSON.stringify(g));delete c._cloud;c.memberIds=(c.members||[]).map(m=>m.id);return c}
+function cloudGroupSave(g){
+  if(!fbReady||!fbAuth||!fbAuth.currentUser||!g||!g.id) return;
+  fbDb.collection("groups").doc(g.id).set({...cleanGroup(g),updatedAt:Date.now()})
+    .catch(e=>{console.warn("group",e);showToast("Groupe non synchronisé : "+fbErrMsg(e))});
+}
+function cloudGroupDelete(gid){
+  if(!fbReady||!fbAuth||!fbAuth.currentUser||!gid) return;
+  fbDb.collection("groups").doc(gid).delete().catch(e=>console.warn("group delete",e));
 }
 function addRequest(from,to){const a=getReqMap();if(!a[to])a[to]=[];if(!a[to].includes(from))a[to].push(from);save(STORAGE.requests,a);cloudList("requests",to,"add",from)}
 function removeRequest(from,to){const a=getReqMap();a[to]=(a[to]||[]).filter(x=>x!==from);save(STORAGE.requests,a);cloudList("requests",to,"remove",from)}
@@ -631,7 +642,18 @@ function loadMsgs(){
   return [];
 }
 function storeMsgs(list){
-  if(activeGroupId) setGMsgs(activeGroupId, list);
+  if(activeGroupId){
+    setGMsgs(activeGroupId, list);
+    if(fbReady){
+      const gid=activeGroupId;
+      list.forEach(m=>{
+        if(m&&m.id&&m.poll){
+          const {id,...rest}=m;
+          fbDb.collection("groups").doc(gid).collection("messages").doc(id).set(rest).catch(e=>console.warn(e));
+        }
+      });
+    }
+  }
   else if(activeFriendId){
     setConv(currentUser.id, activeFriendId, list);
     if(fbReady){
@@ -646,7 +668,10 @@ function storeMsgs(list){
   }
 }
 function pushMsg(msg){
-  if(activeGroupId) addGMsg(activeGroupId, msg);
+  if(activeGroupId){
+    addGMsg(activeGroupId, msg);
+    if(fbReady) fbPushGMsg(activeGroupId, msg).catch(e=>{console.warn(e);showToast("Message non envoyé : "+fbErrMsg(e))});
+  }
   else if(activeFriendId){
     addMessage(currentUser.id, activeFriendId, msg);
     if(fbReady) fbPushMessage(currentUser.id, activeFriendId, msg).catch(e=>{console.warn(e);showToast("Message non envoyé : "+fbErrMsg(e))});
@@ -798,8 +823,43 @@ function startFbSync(){
       if(currentUser) renderFriends();
     },e=>{console.warn("requests",e);showToast("Erreur Firebase : "+fbErrMsg(e))});
   };
-  if(fbAuth.currentUser) run();
-  else{const off=fbAuth.onAuthStateChanged(u=>{if(u){off();run()}})}
+  const runGroups=()=>{
+    // groupes créés avant la synchro : envoyés une seule fois dans le cloud
+    Object.values(getGroups()).forEach(g=>{
+      if(g&&!g._cloud&&(g.members||[]).some(m=>m.id===uid)) cloudGroupSave(g);
+    });
+    let first=true;
+    unsubGroups=fbDb.collection("groups").where("memberIds","array-contains",uid).onSnapshot(async snap=>{
+      const cloud={};
+      snap.forEach(d=>{const g=d.data();if(g&&g.id){g._cloud=true;cloud[g.id]=g}});
+      const all=getGroups();
+      let removedActive=false;
+      Object.keys(all).forEach(id=>{
+        if(all[id]&&all[id]._cloud&&!cloud[id]){
+          delete all[id];
+          const gm=load(STORAGE.gmsgs,{});delete gm[id];save(STORAGE.gmsgs,gm);
+          if(activeGroupId===id) removedActive=true;
+        }
+      });
+      Object.keys(cloud).forEach(id=>{all[id]=cloud[id]});
+      saveGroups(all);
+      if(first){
+        first=false;
+        const seen=getGroupSeen(uid);
+        Object.keys(cloud).forEach(id=>{if(!seen.includes(id))seen.push(id)});
+        setGroupSeen(uid,seen);
+      }
+      const ids=new Set();
+      Object.values(cloud).forEach(g=>(g.members||[]).forEach(m=>ids.add(m.id)));
+      await cacheProfiles([...ids]);
+      if(!currentUser) return;
+      if(removedActive){showNoChat();showToast("Vous ne faites plus partie de ce groupe.")}
+      else if(activeGroupId&&cloud[activeGroupId]) openGroup(activeGroupId);
+      renderFriends();
+    },e=>{console.warn("groups",e);showToast("Erreur Firebase : "+fbErrMsg(e))});
+  };
+  if(fbAuth.currentUser){run();runGroups()}
+  else{const off=fbAuth.onAuthStateChanged(u=>{if(u){off();run();runGroups()}})}
 }
 function showApp(){
   authScreen.classList.add("hidden");appScreen.classList.remove("hidden");
@@ -1259,6 +1319,7 @@ function leaveGroup(){
     save(STORAGE.gmsgs,gm);
   }
   saveGroups(groups);
+  if(g.members.length) cloudGroupSave(g); else cloudGroupDelete(g.id);
   closeGroupInfo();
   showNoChat();
   showToast("Vous avez quitté le groupe.");
@@ -1426,6 +1487,7 @@ function saveGroupEdit(){
   }
   g.name=name;g.avatar=groupEdit.avatar;g.banner=groupEdit.banner||"#1d3eb2";g.members=members;
   saveGroups(groups);
+  cloudGroupSave(g);
   showToast("Groupe mis à jour !");
   groupInfoView="card";groupEdit=null;groupInfoPalette=false;
   openGroup(activeGroupId);
@@ -1449,6 +1511,7 @@ function createGroupNow(){
   const groups=getGroups();
   groups[id]={id,name,avatar:groupDraft.avatar,banner:"#1d3eb2",members:selectedMembers(),createdBy:currentUser.id,createdAt:Date.now()};
   saveGroups(groups);
+  cloudGroupSave(groups[id]);
   const seen=getGroupSeen(currentUser.id);
   if(!seen.includes(id)) seen.push(id);
   setGroupSeen(currentUser.id,seen);
