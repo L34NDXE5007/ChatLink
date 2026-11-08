@@ -252,6 +252,11 @@ button:focus,button:focus-visible,a:focus{outline:none!important;box-shadow:none
 .toast{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--pill);padding:10px 16px;color:var(--fg);box-shadow:0 8px 24px rgba(0,0,0,.45);max-width:min(92vw,360px);font-size:14px;font-weight:500}
 .toast-check{width:22px;height:22px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 @media(max-width:700px){.sidebar{width:100%;min-width:100%}.sidebar.hidden-mobile{display:none}.chat-area.hidden-mobile{display:none}#back-to-friends,#back-group{display:flex!important}}
+@media(max-width:700px){
+  #group-member-pills{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;min-width:0;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none;touch-action:pan-x}
+  #group-member-pills::-webkit-scrollbar{display:none}
+  #group-member-pills .member-pill{flex:0 0 auto;white-space:nowrap}
+}
 @media(min-width:701px){#back-to-friends,#back-group{display:none!important}}
 </style>
 </head>
