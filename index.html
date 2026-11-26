@@ -273,6 +273,21 @@ button:focus,button:focus-visible,a:focus{outline:none!important;box-shadow:none
 }
 @media(min-width:701px){#back-to-friends,#back-group{display:none!important}}
 /* ================= ChatLink v2 ================= */
+@property --bg{syntax:"<color>";inherits:true;initial-value:#1a191e}
+@property --surface{syntax:"<color>";inherits:true;initial-value:#222126}
+@property --input{syntax:"<color>";inherits:true;initial-value:#2e2d33}
+@property --hover{syntax:"<color>";inherits:true;initial-value:#35343b}
+@property --fg{syntax:"<color>";inherits:true;initial-value:#f2f2f4}
+@property --muted{syntax:"<color>";inherits:true;initial-value:#a0a0a8}
+@property --faint{syntax:"<color>";inherits:true;initial-value:#6e6e76}
+@property --border{syntax:"<color>";inherits:true;initial-value:rgba(255,255,255,.12)}
+@property --accent{syntax:"<color>";inherits:true;initial-value:#2f55e0}
+@property --accent-h{syntax:"<color>";inherits:true;initial-value:#2646c0}
+@property --accent-2{syntax:"<color>";inherits:true;initial-value:#7a5cf0}
+@property --msg-size{syntax:"<length>";inherits:true;initial-value:14.5px}
+html.theme-ready{transition:--bg .55s ease,--surface .55s ease,--input .55s ease,--hover .55s ease,--fg .55s ease,--muted .55s ease,--faint .55s ease,--border .55s ease,--accent .5s ease,--accent-h .5s ease,--accent-2 .5s ease,--msg-size .5s cubic-bezier(.3,.9,.3,1)}
+#theme-overlay{background:rgba(0,0,0,.32)}
+html[data-theme="light"] #theme-overlay{background:rgba(20,24,48,.22)}
 :root{--accent:#2f55e0;--accent-h:#2646c0;--accent-2:#7a5cf0;--msg-size:14.5px}
 html[data-theme="light"]{--bg:#f2f4fa;--surface:#ffffff;--input:#eceff7;--hover:#e5e9f5;--fg:#14151d;--muted:#565a70;--faint:#8a8ea3;--border:rgba(20,24,48,.13)}
 html[data-theme="amoled"]{--bg:#000000;--surface:#0a0a0c;--input:#151519;--hover:#1b1b20;--border:rgba(255,255,255,.1)}
@@ -399,18 +414,26 @@ html[data-theme="light"] .auth-box,html[data-theme="light"] .sheet{box-shadow:0 
 .theme-sheet{width:min(420px,100%);padding:18px 18px 22px}
 .theme-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .theme-head strong{font-size:17px}
-.seg{display:flex;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:4px}
-.seg button{flex:1;border:none;background:transparent;color:var(--muted);border-radius:999px;padding:9px 6px;font-weight:600;font-size:13px;cursor:pointer;transition:background .2s ease,color .2s ease}
-.seg button.on{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+.seg{position:relative;display:flex;gap:0;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:4px}
+.seg-thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/var(--n));border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent-2));transform:translateX(calc(var(--i)*100%));transition:transform .42s cubic-bezier(.3,1.25,.5,1);box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 40%,transparent)}
+.seg button{position:relative;z-index:1;flex:1;border:none;background:transparent;color:var(--muted);border-radius:999px;padding:9px 6px;font-weight:600;font-size:13px;cursor:pointer;transition:color .3s ease,transform .12s ease}
+.seg button:active{transform:scale(.96)}
+.seg button.on{color:#fff}
 .accent-row{display:flex;flex-wrap:wrap;gap:10px}
-.acc-swatch{width:38px;height:38px;border-radius:50%;border:3px solid transparent;cursor:pointer;padding:0;transition:transform .12s ease;box-shadow:0 0 0 1px var(--border)}
-.acc-swatch.on{border-color:var(--fg);transform:scale(1.08)}
-.acc-swatch:active{transform:scale(.9)}
+.acc-swatch{width:38px;height:38px;border-radius:50%;border:3px solid transparent;cursor:pointer;padding:0;transition:transform .3s cubic-bezier(.3,1.5,.5,1),border-color .25s ease;box-shadow:0 0 0 1px var(--border)}
+.acc-swatch.on{border-color:var(--fg);transform:scale(1.12)}
+.acc-swatch:active{transform:scale(.88)}
 .switch-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
-.switch{position:relative;width:48px;height:28px;border-radius:999px;border:none;background:var(--input);cursor:pointer;transition:background .2s ease;flex-shrink:0;padding:0}
-.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s ease;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-.switch.on{background:linear-gradient(135deg,var(--accent),var(--accent-2))}
-.switch.on::after{transform:translateX(20px)}
+.switch-info small{display:block;color:var(--faint);font-size:12px;margin-top:2px;transition:opacity .16s ease}
+.switch{position:relative;width:52px;height:30px;border-radius:999px;border:none;background:var(--input);cursor:pointer;flex-shrink:0;padding:0;overflow:hidden;box-shadow:inset 0 0 0 1px var(--border)}
+.switch::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,var(--accent),var(--accent-2));opacity:0;transition:opacity .3s ease}
+.switch.on::before{opacity:1}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:999px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35);transition:transform .42s cubic-bezier(.3,1.4,.5,1),width .18s ease}
+.switch:active::after{width:31px}
+.switch.on::after{transform:translateX(22px)}
+.switch.on:active::after{transform:translateX(15px)}
+.switch.pulse{animation:cl-ring .55s ease-out}
+@keyframes cl-ring{0%{box-shadow:inset 0 0 0 1px var(--border),0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}100%{box-shadow:inset 0 0 0 1px var(--border),0 0 0 14px transparent}}
 .theme-preview{margin-top:16px;border:1px solid var(--border);background:var(--bg);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:6px}
 .theme-preview .message-content{max-width:80%}
 .theme-preview .own{align-self:flex-end}
@@ -627,6 +650,7 @@ function applyPrefs(){
 }
 function savePrefs(){save(PREF_KEY,prefs);applyPrefs()}
 applyPrefs();
+requestAnimationFrame(()=>requestAnimationFrame(()=>document.documentElement.classList.add("theme-ready")));
 let fbReady=false, fbAuth=null, fbDb=null;
 try{
   firebase.initializeApp(firebaseConfig);
@@ -1593,22 +1617,45 @@ const EMOJIS=["😀","😃","😄","😁","😆","😅","😂","🤣","😊","�
 /* fenêtre Apparence */
 function renderThemeSheet(){
   const sh=document.getElementById("theme-sheet");
-  const seg=(name,opts)=>`<div class="seg" data-seg="${name}">${opts.map(([v,l])=>`<button type="button" data-v="${v}" class="${prefs[name]===v?"on":""}">${l}</button>`).join("")}</div>`;
+  const seg=(name,opts)=>{
+    const i=Math.max(0,opts.findIndex(o=>o[0]===prefs[name]));
+    return `<div class="seg" data-seg="${name}" style="--n:${opts.length};--i:${i}"><span class="seg-thumb"></span>${opts.map(([v,l])=>`<button type="button" data-v="${v}" class="${prefs[name]===v?"on":""}">${l}</button>`).join("")}</div>`;
+  };
   sh.innerHTML=`<div class="theme-head"><strong>Apparence</strong><button type="button" class="icon-x" id="theme-close" aria-label="Fermer">×</button></div>
     <div class="glabel">Thème</div>${seg("theme",[["dark","Sombre"],["light","Clair"],["amoled","Nuit"]])}
     <div class="glabel">Couleur</div>
     <div class="accent-row">${ACCENTS.map(([n,c])=>`<button type="button" class="acc-swatch ${prefs.accent===c?"on":""}" data-accent="${c}" style="background:${c}" aria-label="${n}" title="${n}"></button>`).join("")}</div>
     <div class="glabel">Taille du texte</div>${seg("size",[["s","Petit"],["m","Normal"],["l","Grand"]])}
     <div class="glabel">Notifications</div>
-    <div class="switch-row"><span>Son des nouveaux messages</span><button type="button" class="switch ${prefs.sound?"on":""}" id="sound-switch" aria-label="Son"></button></div>
+    <div class="switch-row"><div class="switch-info"><span>Son des nouveaux messages</span><small id="sound-state">${prefs.sound?"Activé":"Désactivé"}</small></div><button type="button" class="switch ${prefs.sound?"on":""}" id="sound-switch" role="switch" aria-checked="${prefs.sound}" aria-label="Son"></button></div>
     <div class="theme-preview">
       <div class="message"><img class="avatar" src="${av(getUsers()[activeFriendId]||{})}"><div class="msg-col"><div class="message-content">Salut ! Tu aimes le nouveau look ? ✨</div></div></div>
       <div class="message own"><div class="msg-col"><div class="message-content">Il est top, j'adore 😍</div></div></div>
     </div>`;
   sh.querySelector("#theme-close").onclick=closeTheme;
-  sh.querySelectorAll(".seg").forEach(s=>s.querySelectorAll("button").forEach(b=>b.onclick=()=>{prefs[s.dataset.seg]=b.dataset.v;savePrefs();renderThemeSheet()}));
-  sh.querySelectorAll("[data-accent]").forEach(b=>b.onclick=()=>{prefs.accent=b.dataset.accent;savePrefs();renderThemeSheet()});
-  sh.querySelector("#sound-switch").onclick=()=>{prefs.sound=!prefs.sound;savePrefs();if(prefs.sound)beep();renderThemeSheet()};
+  sh.querySelectorAll(".seg").forEach(s=>{
+    const btns=[...s.querySelectorAll("button")];
+    btns.forEach((b,i)=>b.onclick=()=>{
+      if(prefs[s.dataset.seg]===b.dataset.v) return;
+      prefs[s.dataset.seg]=b.dataset.v;savePrefs();
+      s.style.setProperty("--i",i);
+      btns.forEach(x=>x.classList.toggle("on",x===b));
+    });
+  });
+  const sws=[...sh.querySelectorAll("[data-accent]")];
+  sws.forEach(b=>b.onclick=()=>{
+    if(prefs.accent===b.dataset.accent) return;
+    prefs.accent=b.dataset.accent;savePrefs();
+    sws.forEach(x=>x.classList.toggle("on",x===b));
+  });
+  const sw=sh.querySelector("#sound-switch"),st=sh.querySelector("#sound-state");
+  sw.onclick=()=>{
+    prefs.sound=!prefs.sound;savePrefs();
+    sw.classList.toggle("on",prefs.sound);sw.setAttribute("aria-checked",String(prefs.sound));
+    sw.classList.remove("pulse");void sw.offsetWidth;sw.classList.add("pulse");
+    st.style.opacity="0";setTimeout(()=>{st.textContent=prefs.sound?"Activé":"Désactivé";st.style.opacity="1"},150);
+    if(prefs.sound) beep();
+  };
 }
 function closeTheme(){closeOverlayEl(document.getElementById("theme-overlay"))}
 document.getElementById("open-theme").onclick=()=>{renderThemeSheet();document.getElementById("theme-overlay").classList.remove("hidden")};
