@@ -463,6 +463,80 @@ button,.sidebar,.friend-item,.chat-header,.topbar,.user-card,.attach-menu,.msg-a
 .sheet.card-lock{overflow-y:auto!important;max-height:min(94dvh,820px)!important;padding-bottom:20px}
 /* menu photos / fichiers / sondages : au-dessus de la barre d'envoi, sans la recouvrir */
 .attach-menu{left:12px;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 42px + 12px)}
+
+/* ===== v2.2 : onglets Apparence / Applications + application YouTube ===== */
+.theme-sheet{width:min(540px,100%)}
+.theme-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.tabs-bar{position:relative;display:flex;gap:28px;padding-bottom:12px;flex:1;min-width:0}
+.tabs-bar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--border)}
+.tab-btn{border:none;background:transparent;color:var(--faint);font-size:17px;font-weight:600;padding:2px 0;cursor:pointer;white-space:nowrap;transition:color .3s ease}
+.tab-btn.on{color:var(--fg)}
+.tab-btn:active{opacity:.7}
+.tab-ind{position:absolute;bottom:-1px;left:0;width:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:1;transition:left .32s cubic-bezier(.4,0,.2,1),width .42s cubic-bezier(.4,0,.2,1)}
+.panes{display:grid;overflow:hidden;margin:0 -2px;padding:0 2px}
+.pane{grid-area:1/1;min-width:0;transition:opacity .32s ease,transform .4s cubic-bezier(.3,.9,.3,1)}
+.pane[data-pane="apps"]{opacity:0;transform:translateX(40px);visibility:hidden;pointer-events:none;transition:opacity .32s ease,transform .4s cubic-bezier(.3,.9,.3,1),visibility 0s .4s}
+.panes[data-active="apps"] .pane[data-pane="look"]{opacity:0;transform:translateX(-40px);visibility:hidden;pointer-events:none;transition:opacity .32s ease,transform .4s cubic-bezier(.3,.9,.3,1),visibility 0s .4s}
+.panes[data-active="apps"] .pane[data-pane="apps"]{opacity:1;transform:none;visibility:visible;pointer-events:auto;transition:opacity .32s ease .05s,transform .4s cubic-bezier(.3,.9,.3,1) .05s,visibility 0s}
+.apps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;padding:8px 0 4px}
+.app-card{border:1px solid var(--border);background:var(--bg);color:var(--fg);border-radius:26px;overflow:hidden;cursor:pointer;text-align:left;padding:0;display:block;width:100%;transition:transform .18s ease,border-color .25s ease,box-shadow .25s ease}
+.app-card:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));box-shadow:0 12px 30px rgba(0,0,0,.28)}
+.app-card:active{transform:scale(.97)}
+.app-card .art{height:150px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border);color:var(--fg)}
+.app-card .art svg{max-width:80%;height:auto}
+.app-card .foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px}
+.app-name{font-weight:700;font-size:16px}
+.app-sub{font-size:12px;color:var(--faint);margin-top:3px}
+.app-play{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 40%,transparent);transition:transform .25s cubic-bezier(.3,1.5,.5,1)}
+.app-card:hover .app-play{transform:scale(1.08)}
+
+/* YouTube plein écran */
+.yt-app{position:fixed;inset:0;z-index:80;background:var(--bg);color:var(--fg);display:flex;flex-direction:column;animation:cl-yt-in .4s cubic-bezier(.2,.85,.2,1) both}
+@keyframes cl-yt-in{from{opacity:0;transform:translateY(26px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes cl-yt-out{from{opacity:1;transform:none}to{opacity:0;transform:translateY(26px) scale(.985)}}
+.yt-app.leaving{animation:cl-yt-out .24s ease both!important;pointer-events:none!important}
+.yt-top{display:flex;align-items:center;gap:12px;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.yt-brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;flex-shrink:0;border:none;background:transparent;color:var(--fg);cursor:pointer;padding:0}
+.yt-search{flex:1;display:flex;min-width:0;max-width:640px;margin:0 auto}
+.yt-search input{flex:1;min-width:0;height:42px;border-radius:999px 0 0 999px;border:1px solid var(--border);border-right:none;background:var(--bg);color:var(--fg);padding:0 16px;font-size:15px;outline:none;transition:border-color .2s}
+.yt-search input:focus{border-color:var(--accent)}
+.yt-search button{width:56px;height:42px;border-radius:0 999px 999px 0;border:1px solid var(--border);background:var(--input);color:var(--fg);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.yt-search button svg{width:18px;height:18px}
+.yt-close{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--bg);color:var(--fg);font-size:26px;line-height:1;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;transition:transform .3s cubic-bezier(.3,1.4,.5,1),background .2s ease}
+.yt-close:hover{background:var(--hover);transform:rotate(90deg)}
+.yt-body{flex:1;overflow-y:auto;min-height:0;padding:18px 16px 32px}
+.yt-wrap{max-width:1100px;margin:0 auto}
+.yt-player{width:100%;aspect-ratio:16/9;border:0;border-radius:20px;background:#000;display:block;box-shadow:0 18px 50px rgba(0,0,0,.5);animation:cl-rise .45s cubic-bezier(.2,.85,.2,1) both}
+.yt-title{font-size:18px;font-weight:700;margin:16px 2px 4px;line-height:1.3}
+.yt-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 2px 6px}
+.yt-chip{border:1px solid var(--border);background:var(--surface);color:var(--fg);border-radius:999px;padding:9px 15px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .2s ease,transform .12s ease}
+.yt-chip:hover{background:var(--hover)}
+.yt-chip:active{transform:scale(.96)}
+.yt-h{font-size:14px;font-weight:700;color:var(--muted);margin:6px 2px 12px}
+.yt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+.yt-card{border:none;background:transparent;color:var(--fg);text-align:left;cursor:pointer;padding:0;display:block;animation:cl-rise .45s cubic-bezier(.2,.85,.2,1) both}
+.yt-card img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:16px;display:block;background:var(--input);transition:transform .25s ease}
+.yt-card:hover img{transform:scale(1.025)}
+.yt-card .t{font-size:14px;font-weight:600;margin:9px 2px 2px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.yt-card .c{font-size:12px;color:var(--faint);margin:0 2px}
+.yt-info{border:1px solid var(--border);background:var(--surface);border-radius:20px;padding:16px 18px;margin-top:26px;font-size:13.5px;line-height:1.55;color:var(--muted)}
+.yt-info strong{color:var(--fg);font-size:14.5px}
+.yt-info p{margin:6px 0 10px}
+.yt-notice{color:var(--fg)!important;background:color-mix(in srgb,var(--accent) 16%,transparent);border-radius:12px;padding:10px 12px;margin:0 0 12px!important}
+.yt-keyrow{display:flex;gap:8px}
+.yt-keyrow input{flex:1;min-width:0;height:40px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--fg);padding:0 14px;font-size:14px;outline:none}
+.yt-keyrow input:focus{border-color:var(--accent)}
+.yt-empty{text-align:center;color:var(--faint);padding:46px 10px 20px;line-height:1.6}
+.yt-orb{margin:0 auto 14px;width:76px;height:76px;border-radius:24px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;animation:cl-bob 3.4s ease-in-out infinite}
+.message-content a.yt-link{text-decoration:none;font-weight:600;background:rgba(127,127,127,.2);border-radius:10px;padding:2px 8px;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+@media(max-width:700px){
+  .yt-brand span{display:none}
+  .yt-top{gap:8px;padding:8px 10px}
+  .yt-body{padding:12px 10px 26px}
+  .yt-player{border-radius:14px}
+  .tabs-bar{gap:20px}
+  .tab-btn{font-size:16px}
+}
 </style>
 </head>
 <body>
@@ -573,6 +647,14 @@ button,.sidebar,.friend-item,.chat-header,.topbar,.user-card,.attach-menu,.msg-a
   </main>
 </div>
 <div id="theme-overlay" class="overlay hidden"><div class="sheet theme-sheet" id="theme-sheet"></div></div>
+<div id="yt-app" class="yt-app hidden" role="dialog" aria-label="YouTube">
+  <div class="yt-top">
+    <button type="button" class="yt-brand" id="yt-brand" aria-label="Accueil YouTube"><svg viewBox="0 0 46 32" width="30" height="21" aria-hidden="true"><rect width="46" height="32" rx="9" fill="#ff0000"/><path d="M19 8.5v15l13-7.5z" fill="#fff"/></svg><span>YouTube</span></button>
+    <form class="yt-search" id="yt-form"><input id="yt-input" placeholder="Rechercher ou coller un lien YouTube" autocomplete="off" enterkeyhint="search"><button type="submit" aria-label="Rechercher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button></form>
+    <button type="button" class="yt-close" id="yt-close" aria-label="Quitter YouTube">×</button>
+  </div>
+  <div class="yt-body" id="yt-body"></div>
+</div>
 <div id="profile-overlay" class="overlay profile-ov hidden">
   <div class="profile-stack">
     <div class="sheet" id="profile-sheet"></div>
@@ -1444,6 +1526,7 @@ function fmtText(t){
   let h=esc(t);
   h=h.replace(/(https?:\/\/[^\s<>"'`]+)/g,u=>{
     const m=u.match(/[.,;:!?)]+$/);const tail=m?m[0]:"";const clean=tail?u.slice(0,-tail.length):u;
+    if(ytParse(clean.replace(/&amp;/g,"&"))) return `<a href="${clean}" target="_blank" rel="noopener noreferrer" class="yt-link" data-ytu="${clean}">▶ ${clean}</a>${tail}`;
     return `<a href="${clean}" target="_blank" rel="noopener noreferrer">${clean}</a>${tail}`;
   });
   h=h.replace(/`([^`\n]+)`/g,"<code>$1</code>")
@@ -1635,23 +1718,40 @@ const EMOJIS=["😀","😃","😄","😁","😆","😅","😂","🤣","😊","�
   tb.onclick=()=>{el.scrollTo({top:el.scrollHeight,behavior:"smooth"})};
 })();
 
-/* fenêtre Apparence */
+/* fenêtre Apparence / Applications */
+let themePlace=null;
 function renderThemeSheet(){
   const sh=document.getElementById("theme-sheet");
   const seg=(name,opts)=>{
     const i=Math.max(0,opts.findIndex(o=>o[0]===prefs[name]));
     return `<div class="seg" data-seg="${name}" style="--n:${opts.length};--i:${i}"><span class="seg-thumb"></span>${opts.map(([v,l])=>`<button type="button" data-v="${v}" class="${prefs[name]===v?"on":""}">${l}</button>`).join("")}</div>`;
   };
-  sh.innerHTML=`<div class="theme-head"><strong>Apparence</strong><button type="button" class="icon-x" id="theme-close" aria-label="Fermer">×</button></div>
-    <div class="glabel">Thème</div>${seg("theme",[["dark","Sombre"],["light","Clair"],["amoled","Nuit"]])}
-    <div class="glabel">Couleur</div>
-    <div class="accent-row">${ACCENTS.map(([n,c])=>`<button type="button" class="acc-swatch ${prefs.accent===c?"on":""}" data-accent="${c}" style="background:${c}" aria-label="${n}" title="${n}"></button>`).join("")}</div>
-    <div class="glabel">Taille du texte</div>${seg("size",[["s","Petit"],["m","Normal"],["l","Grand"]])}
-    <div class="glabel">Notifications</div>
-    <div class="switch-row"><div class="switch-info"><span>Son des nouveaux messages</span><small id="sound-state">${prefs.sound?"Activé":"Désactivé"}</small></div><button type="button" class="switch ${prefs.sound?"on":""}" id="sound-switch" role="switch" aria-checked="${prefs.sound}" aria-label="Son"></button></div>
-    <div class="theme-preview">
-      <div class="message"><img class="avatar" src="${av(getUsers()[activeFriendId]||{})}"><div class="msg-col"><div class="message-content">Salut ! Tu aimes le nouveau look ? ✨</div></div></div>
-      <div class="message own"><div class="msg-col"><div class="message-content">Il est top, j'adore 😍</div></div></div>
+  sh.innerHTML=`<div class="theme-head">
+      <div class="tabs-bar" id="theme-tabs"><button type="button" class="tab-btn on" data-tab="look">Apparence</button><button type="button" class="tab-btn" data-tab="apps">Applications</button><span class="tab-ind"></span></div>
+      <button type="button" class="icon-x" id="theme-close" aria-label="Fermer">×</button>
+    </div>
+    <div class="panes" data-active="look">
+      <div class="pane" data-pane="look">
+        <div class="glabel">Thème</div>${seg("theme",[["dark","Sombre"],["light","Clair"],["amoled","Nuit"]])}
+        <div class="glabel">Couleur</div>
+        <div class="accent-row">${ACCENTS.map(([n,c])=>`<button type="button" class="acc-swatch ${prefs.accent===c?"on":""}" data-accent="${c}" style="background:${c}" aria-label="${n}" title="${n}"></button>`).join("")}</div>
+        <div class="glabel">Taille du texte</div>${seg("size",[["s","Petit"],["m","Normal"],["l","Grand"]])}
+        <div class="glabel">Notifications</div>
+        <div class="switch-row"><div class="switch-info"><span>Son des nouveaux messages</span><small id="sound-state">${prefs.sound?"Activé":"Désactivé"}</small></div><button type="button" class="switch ${prefs.sound?"on":""}" id="sound-switch" role="switch" aria-checked="${prefs.sound}" aria-label="Son"></button></div>
+        <div class="theme-preview">
+          <div class="message"><img class="avatar" src="${av(getUsers()[activeFriendId]||{})}"><div class="msg-col"><div class="message-content">Salut ! Tu aimes le nouveau look ? ✨</div></div></div>
+          <div class="message own"><div class="msg-col"><div class="message-content">Il est top, j'adore 😍</div></div></div>
+        </div>
+      </div>
+      <div class="pane" data-pane="apps">
+        <div class="apps-grid">
+          <button type="button" class="app-card" id="app-youtube" aria-label="Ouvrir YouTube">
+            <div class="art">${YT_LOGO}</div>
+            <div class="foot"><div><div class="app-name">YouTube</div><div class="app-sub yt-hours">${ytHoursLabel()} passées au total</div></div>
+              <span class="app-play"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg></span></div>
+          </button>
+        </div>
+      </div>
     </div>`;
   sh.querySelector("#theme-close").onclick=closeTheme;
   sh.querySelectorAll(".seg").forEach(s=>{
@@ -1677,10 +1777,191 @@ function renderThemeSheet(){
     st.style.opacity="0";setTimeout(()=>{st.textContent=prefs.sound?"Activé":"Désactivé";st.style.opacity="1"},150);
     if(prefs.sound) beep();
   };
+  /* onglets avec trait qui glisse */
+  const tabs=sh.querySelector("#theme-tabs"),ind=tabs.querySelector(".tab-ind"),panes=sh.querySelector(".panes");
+  const tbtns=[...tabs.querySelectorAll(".tab-btn")];
+  themePlace=(anim)=>{
+    const b=tbtns.find(x=>x.classList.contains("on"));if(!b) return;
+    if(!anim) ind.style.transition="none";
+    ind.style.left=b.offsetLeft+"px";ind.style.width=b.offsetWidth+"px";
+    if(!anim){void ind.offsetWidth;ind.style.transition=""}
+  };
+  tbtns.forEach(b=>b.onclick=()=>{
+    if(b.classList.contains("on")) return;
+    tbtns.forEach(x=>x.classList.toggle("on",x===b));
+    panes.dataset.active=b.dataset.tab;
+    themePlace(true);
+    if(b.dataset.tab==="apps") updateYtHours();
+  });
+  sh.querySelector("#app-youtube").onclick=()=>openYouTube();
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>themePlace&&themePlace(false));
 }
 function closeTheme(){closeOverlayEl(document.getElementById("theme-overlay"))}
-document.getElementById("open-theme").onclick=()=>{renderThemeSheet();document.getElementById("theme-overlay").classList.remove("hidden")};
+document.getElementById("open-theme").onclick=()=>{
+  renderThemeSheet();
+  document.getElementById("theme-overlay").classList.remove("hidden");
+  if(themePlace) themePlace(false);
+};
 document.getElementById("theme-overlay").addEventListener("click",e=>{if(e.target.id==="theme-overlay") closeTheme()});
+window.addEventListener("resize",()=>{if(themePlace&&!document.getElementById("theme-overlay").classList.contains("hidden")) themePlace(false)});
+
+/* ===== v2 : application YouTube intégrée ===== */
+const YT_LOGO='<svg viewBox="0 0 200 48" width="190" height="46" aria-hidden="true"><rect x="0" y="4" width="46" height="32" rx="9" fill="#ff0000"/><path d="M19 12.5v15.5l13-7.75z" fill="#fff"/><text x="56" y="31" font-family="Roboto,Arial,sans-serif" font-weight="700" font-size="29" letter-spacing="-1.2" fill="currentColor">YouTube</text></svg>';
+const YT_ICON='<svg viewBox="0 0 46 32" width="30" height="21" aria-hidden="true"><rect width="46" height="32" rx="9" fill="#ff0000"/><path d="M19 8.5v15l13-7.5z" fill="#fff"/></svg>';
+let ytOpen=false, ytTimer=null, ytBack=null;
+function ytSkey(){return "chatlink_yt_s_"+(currentUser?currentUser.id:"")}
+function ytHkey(){return "chatlink_yt_h_"+(currentUser?currentUser.id:"")}
+function ytSeconds(){return +load(ytSkey(),0)||0}
+function ytHoursLabel(){
+  const s=ytSeconds();
+  if(s<360) return "0h";
+  return (s/3600).toFixed(1).replace(".",",")+"h";
+}
+function updateYtHours(){
+  document.querySelectorAll(".yt-hours").forEach(e=>{e.textContent=ytHoursLabel()+" passées au total"});
+}
+function ytApiKey(){try{return localStorage.getItem("chatlink_yt_apikey")||""}catch(_){return ""}}
+function decodeEnt(s){const t=document.createElement("textarea");t.innerHTML=s;return t.value}
+function ytParse(t){
+  t=String(t||"").trim();
+  if(!t||/\s/.test(t)) return null;
+  let u;
+  try{u=new URL(/^https?:\/\//i.test(t)?t:"https://"+t)}catch(_){return null}
+  const h=u.hostname.replace(/^(www|m|music)\./,"");
+  let id=null;const list=u.searchParams.get("list");
+  if(h==="youtu.be") id=u.pathname.slice(1).split("/")[0];
+  else if(h==="youtube.com"||h==="youtube-nocookie.com"){
+    if(u.pathname==="/watch") id=u.searchParams.get("v");
+    else{const m=u.pathname.match(/^\/(?:shorts|embed|live|v)\/([A-Za-z0-9_-]{11})/);if(m) id=m[1]}
+  }else return null;
+  if(id&&!/^[A-Za-z0-9_-]{11}$/.test(id)) id=null;
+  if(!id&&!(list&&/^[A-Za-z0-9_-]+$/.test(list))) return null;
+  const start=parseInt(u.searchParams.get("t")||u.searchParams.get("start")||"0",10)||0;
+  return {id,list:list&&/^[A-Za-z0-9_-]+$/.test(list)?list:null,start};
+}
+function ytHistory(){return load(ytHkey(),[])}
+function ytAddHistory(id,title){
+  if(!id) return;
+  let h=ytHistory().filter(x=>x.id!==id);
+  h.unshift({id,title:title||"",ts:Date.now()});
+  save(ytHkey(),h.slice(0,12));
+}
+function ytSetTitle(id,title){
+  const h=ytHistory();const e=h.find(x=>x.id===id);
+  if(e&&title){e.title=title;save(ytHkey(),h)}
+}
+function ytCard(v){
+  return `<button type="button" class="yt-card" data-id="${escA(v.id)}" data-title="${escA(v.title||"")}"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/${escA(v.id)}/mqdefault.jpg"><div class="t">${esc(v.title||"Vidéo YouTube")}</div>${v.channel?`<div class="c">${esc(v.channel)}</div>`:""}</button>`;
+}
+function ytBindCards(root){
+  root.querySelectorAll(".yt-card").forEach(c=>c.onclick=()=>ytPlay({id:c.dataset.id,title:c.dataset.title}));
+}
+function ytBody(){return document.getElementById("yt-body")}
+function ytKeyPanel(notice){
+  const has=!!ytApiKey();
+  return `<div class="yt-info">
+    ${notice?`<p class="yt-notice">${esc(notice)}</p>`:""}
+    <strong>${has?"Recherche activée":"Activer la recherche de vidéos"}</strong>
+    ${has?`<p>La clé API YouTube est enregistrée sur cet appareil.</p><div class="yt-actions" style="margin:6px 0 0"><button type="button" class="yt-chip" id="yt-key-del">Retirer la clé</button></div>`
+    :`<p>Tu peux déjà coller un lien YouTube dans la barre du haut. Pour chercher des vidéos sans quitter ChatLink, ajoute une clé API gratuite :
+    <br>1. console.cloud.google.com, ton projet, « API et services »<br>2. Active « YouTube Data API v3 »<br>3. « Identifiants », puis « Créer une clé API », et colle-la ici.</p>
+    <div class="yt-keyrow"><input id="yt-key" placeholder="Clé API YouTube" autocomplete="off"><button type="button" class="yt-chip" id="yt-key-save">Enregistrer</button></div>`}
+  </div>`;
+}
+function ytHome(notice){
+  ytBack=null;
+  const hist=ytHistory();
+  ytBody().innerHTML=`<div class="yt-wrap">
+    ${hist.length?`<div class="yt-h">Récemment regardées</div><div class="yt-grid">${hist.map(ytCard).join("")}</div>`
+      :`<div class="yt-empty"><div class="yt-orb">${YT_ICON}</div><strong style="display:block;color:var(--fg);font-size:16px;margin-bottom:6px">Regarde YouTube sans quitter ChatLink</strong>Colle un lien de vidéo dans la barre du haut.<br>Les liens YouTube envoyés dans les conversations s'ouvrent aussi ici.</div>`}
+    ${ytKeyPanel(notice)}
+  </div>`;
+  ytBindCards(ytBody());
+  const save1=document.getElementById("yt-key-save"),del=document.getElementById("yt-key-del");
+  if(save1) save1.onclick=()=>{const k=document.getElementById("yt-key").value.trim();if(!k) return;try{localStorage.setItem("chatlink_yt_apikey",k)}catch(_){}ytHome();showToast("Recherche activée","🔎")};
+  if(del) del.onclick=()=>{try{localStorage.removeItem("chatlink_yt_apikey")}catch(_){}ytHome()};
+}
+async function ytSearch(q){
+  const key=ytApiKey();
+  ytBack=()=>ytHome();
+  ytBody().innerHTML=`<div class="yt-wrap"><div class="yt-empty">Recherche de « ${esc(q)} »…</div></div>`;
+  try{
+    const r=await fetch("https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&safeSearch=moderate&q="+encodeURIComponent(q)+"&key="+encodeURIComponent(key));
+    const d=await r.json();
+    if(!r.ok||d.error) throw new Error((d.error&&d.error.message)||("Erreur "+r.status));
+    const items=(d.items||[]).filter(x=>x.id&&x.id.videoId).map(x=>({id:x.id.videoId,title:decodeEnt(x.snippet.title),channel:decodeEnt(x.snippet.channelTitle)}));
+    ytBody().innerHTML=`<div class="yt-wrap"><div class="yt-h">Résultats pour « ${esc(q)} »</div>${items.length?`<div class="yt-grid">${items.map(ytCard).join("")}</div>`:`<div class="yt-empty">Aucun résultat.</div>`}</div>`;
+    ytBindCards(ytBody());
+    ytBody().querySelectorAll(".yt-card").forEach(c=>c.addEventListener("click",()=>{ytBack=()=>ytSearch(q)}));
+  }catch(e){
+    ytBody().innerHTML=`<div class="yt-wrap"><div class="yt-info"><strong>La recherche a échoué</strong><p>${esc(String(e.message||e))}</p><div class="yt-actions" style="margin:6px 0 0"><button type="button" class="yt-chip" id="yt-err-back">Retour</button></div></div></div>`;
+    document.getElementById("yt-err-back").onclick=()=>ytHome();
+  }
+}
+function ytPlay(v){
+  const backFn=ytBack||(()=>ytHome());
+  ytBack=backFn;
+  const params="autoplay=1&rel=0&playsinline=1&modestbranding=1";
+  const src=v.id
+    ?`https://www.youtube-nocookie.com/embed/${v.id}?${params}${v.list?"&list="+encodeURIComponent(v.list):""}${v.start?"&start="+v.start:""}`
+    :`https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(v.list)}&${params}`;
+  const url=v.id?`https://www.youtube.com/watch?v=${v.id}${v.list?"&list="+v.list:""}`:`https://www.youtube.com/playlist?list=${v.list}`;
+  ytBody().innerHTML=`<div class="yt-wrap">
+    <iframe class="yt-player" src="${escA(src)}" title="Lecteur YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    <div class="yt-title" id="yt-title">${esc(v.title||"Vidéo YouTube")}</div>
+    <div class="yt-actions">
+      <button type="button" class="yt-chip" id="yt-back">← Retour</button>
+      <a class="yt-chip" href="${escA(url)}" target="_blank" rel="noopener noreferrer">Ouvrir sur YouTube ↗</a>
+      <button type="button" class="yt-chip" id="yt-copy">Copier le lien</button>
+    </div></div>`;
+  document.getElementById("yt-back").onclick=()=>{const f=ytBack;ytBack=null;(f||ytHome)()};
+  document.getElementById("yt-copy").onclick=()=>{
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(()=>showToast("Lien copié","📋")).catch(()=>{});
+  };
+  ytBody().scrollTop=0;
+  if(v.id){
+    ytAddHistory(v.id,v.title);
+    fetch("https://www.youtube.com/oembed?format=json&url="+encodeURIComponent("https://www.youtube.com/watch?v="+v.id))
+      .then(r=>r.ok?r.json():null).then(d=>{
+        if(d&&d.title){const t=document.getElementById("yt-title");if(t&&ytOpen) t.textContent=d.title;ytSetTitle(v.id,d.title)}
+      }).catch(()=>{});
+  }
+}
+function openYouTube(v){
+  const app=document.getElementById("yt-app");
+  showAnimated(app);ytOpen=true;
+  if(!ytTimer) ytTimer=setInterval(()=>{if(document.visibilityState==="visible") save(ytSkey(),ytSeconds()+5)},5000);
+  document.getElementById("yt-input").value="";
+  if(v&&(v.id||v.list)) {ytBack=()=>ytHome();ytPlay(v)} else ytHome();
+}
+function closeYouTube(){
+  if(!ytOpen) return;
+  ytOpen=false;
+  clearInterval(ytTimer);ytTimer=null;
+  hideAnimated(document.getElementById("yt-app"),()=>{ytBody().innerHTML=""});
+  updateYtHours();
+}
+document.getElementById("yt-close").onclick=closeYouTube;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&ytOpen) closeYouTube()});
+document.getElementById("yt-form").onsubmit=e=>{
+  e.preventDefault();
+  const q=document.getElementById("yt-input").value.trim();
+  if(!q) return;
+  const p=ytParse(q);
+  if(p){ytBack=()=>ytHome();ytPlay(p);return}
+  if(!ytApiKey()){ytHome("Pour chercher « "+q+" », active la recherche ci-dessous, ou colle directement un lien YouTube.");return}
+  ytSearch(q);
+};
+document.getElementById("yt-brand").onclick=()=>{if(ytOpen){ytBack=null;ytHome()}};
+/* liens YouTube dans les conversations */
+document.getElementById("messages").addEventListener("click",ev=>{
+  const a=ev.target.closest("a[data-ytu]");
+  if(!a) return;
+  const p=ytParse(a.dataset.ytu);
+  if(!p) return;
+  ev.preventDefault();
+  openYouTube(p);
+});
 
 function renderMessages(){
   if(!inChat())return;
