@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ChatLink</title>
 <meta name="theme-color" content="#1a191e">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <!-- chatlink-requests-20260926 -->
 <style>
 :root{--bg:#1a191e;--surface:#222126;--input:#2e2d33;--hover:#35343b;--fg:#f2f2f4;--muted:#a0a0a8;--faint:#6e6e76;--border:rgba(255,255,255,.12);--accent:#1d3eb2;--accent-h:#163492;--danger:#ef4444;--pill:9999px;--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -328,7 +331,6 @@ html[data-theme="light"] .auth-box,html[data-theme="light"] .sheet{box-shadow:0 
 /* barre latérale */
 .sidebar{background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 94%,var(--accent)))}
 .friend-item{padding:9px 12px;transition:background .15s ease,transform .12s ease,border-color .15s ease}
-.friend-item:hover:not(.active){transform:translateX(2px)}
 .friend-item.active{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 24%,var(--surface)),var(--hover));border-color:color-mix(in srgb,var(--accent) 50%,transparent);box-shadow:none}
 .friend-main{flex:1;min-width:0}
 .friend-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
@@ -443,6 +445,24 @@ html[data-theme="light"] .auth-box,html[data-theme="light"] .sheet{box-shadow:0 
   .messages{padding:14px 10px 8px}
   .emoji-panel{right:8px}
 }
+
+/* ===== v2.1 : finitions ===== */
+:root{--font:"Roboto",system-ui,-apple-system,"Segoe UI",sans-serif}
+html,body,button,input,textarea,select{font-family:var(--font)}
+/* plus aucune barre de défilement visible (le défilement reste possible) */
+*{scrollbar-width:none!important;-ms-overflow-style:none}
+*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
+/* pas de curseur clignotant ni de sélection involontaire dans l'interface */
+*{caret-color:transparent}
+input,textarea{caret-color:var(--accent-2)}
+button,.sidebar,.friend-item,.chat-header,.topbar,.user-card,.attach-menu,.msg-actions,.react-chip,.day-sep,.reply-bar,.sheet,.overlay{-webkit-user-select:none;user-select:none}
+.message-content,.reply-quote,.msg-meta,input,textarea{-webkit-user-select:text;user-select:text}
+/* liste des conversations : rien n'est coupé au survol */
+.friends-list{padding:2px 6px;box-sizing:border-box}
+/* carte de profil : le bouton « Supprimer le compte » n'est plus coupé */
+.sheet.card-lock{overflow-y:auto!important;max-height:min(94dvh,820px)!important;padding-bottom:20px}
+/* menu photos / fichiers / sondages : au-dessus de la barre d'envoi, sans la recouvrir */
+.attach-menu{left:12px;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 42px + 12px)}
 </style>
 </head>
 <body>
@@ -1601,6 +1621,7 @@ const EMOJIS=["😀","😃","😄","😁","😆","😅","😂","🤣","😊","�
   });
   document.getElementById("emoji-btn").onclick=ev=>{ev.stopPropagation();panel.classList.toggle("hidden")};
   document.addEventListener("click",ev=>{if(!ev.target.closest("#emoji-panel,#emoji-btn")) panel.classList.add("hidden")});
+  document.addEventListener("click",ev=>{if(!ev.target.closest("#attach-menu,#plus-btn")) hideAnimated(document.getElementById("attach-menu"))});
   document.getElementById("reply-cancel").onclick=()=>{if(composerMode&&composerMode.type==="edit")inp.value="";setComposerMode(null)};
   const sb=document.getElementById("msg-search-bar"),si=document.getElementById("msg-search");
   const closeSearch=()=>{sb.classList.add("hidden");si.value="";msgFilter="";renderMessages()};
