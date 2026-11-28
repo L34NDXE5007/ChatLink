@@ -1820,7 +1820,9 @@ function ytHoursLabel(){
 function updateYtHours(){
   document.querySelectorAll(".yt-hours").forEach(e=>{e.textContent=ytHoursLabel()+" passées au total"});
 }
-function ytApiKey(){try{return localStorage.getItem("chatlink_yt_apikey")||""}catch(_){return ""}}
+const YT_DEFAULT_KEY="AIzaSyAOW98VHFL0HFY1aIHOdCCIcptWTFw4oEg"; /* clé restreinte au site et à YouTube Data API v3 */
+function ytCustomKey(){try{return localStorage.getItem("chatlink_yt_apikey")||""}catch(_){return ""}}
+function ytApiKey(){return ytCustomKey()||YT_DEFAULT_KEY}
 function decodeEnt(s){const t=document.createElement("textarea");t.innerHTML=s;return t.value}
 function ytParse(t){
   t=String(t||"").trim();
@@ -1858,22 +1860,19 @@ function ytBindCards(root){
 }
 function ytBody(){return document.getElementById("yt-body")}
 function ytKeyPanel(notice){
-  const has=!!ytApiKey();
-  return `<div class="yt-info">
-    ${notice?`<p class="yt-notice">${esc(notice)}</p>`:""}
-    <strong>${has?"Recherche activée":"Activer la recherche de vidéos"}</strong>
-    ${has?`<p>La clé API YouTube est enregistrée sur cet appareil.</p><div class="yt-actions" style="margin:6px 0 0"><button type="button" class="yt-chip" id="yt-key-del">Retirer la clé</button></div>`
-    :`<p>Tu peux déjà coller un lien YouTube dans la barre du haut. Pour chercher des vidéos sans quitter ChatLink, ajoute une clé API gratuite :
-    <br>1. console.cloud.google.com, ton projet, « API et services »<br>2. Active « YouTube Data API v3 »<br>3. « Identifiants », puis « Créer une clé API », et colle-la ici.</p>
-    <div class="yt-keyrow"><input id="yt-key" placeholder="Clé API YouTube" autocomplete="off"><button type="button" class="yt-chip" id="yt-key-save">Enregistrer</button></div>`}
-  </div>`;
+  const notif=notice?`<p class="yt-notice">${esc(notice)}</p>`:"";
+  if(ytCustomKey()) return `<div class="yt-info">${notif}<strong>Recherche activée</strong><p>Une clé personnelle est enregistrée sur cet appareil.</p><div class="yt-actions" style="margin:6px 0 0"><button type="button" class="yt-chip" id="yt-key-del">Retirer ma clé</button></div></div>`;
+  if(YT_DEFAULT_KEY) return notif?`<div class="yt-info">${notif}</div>`:"";
+  return `<div class="yt-info">${notif}<strong>Activer la recherche de vidéos</strong>
+    <p>Colle un lien YouTube dans la barre du haut, ou ajoute une clé API YouTube Data v3 pour chercher des vidéos.</p>
+    <div class="yt-keyrow"><input id="yt-key" placeholder="Clé API YouTube" autocomplete="off"><button type="button" class="yt-chip" id="yt-key-save">Enregistrer</button></div></div>`;
 }
 function ytHome(notice){
   ytBack=null;
   const hist=ytHistory();
   ytBody().innerHTML=`<div class="yt-wrap">
     ${hist.length?`<div class="yt-h">Récemment regardées</div><div class="yt-grid">${hist.map(ytCard).join("")}</div>`
-      :`<div class="yt-empty"><div class="yt-orb">${YT_ICON}</div><strong style="display:block;color:var(--fg);font-size:16px;margin-bottom:6px">Regarde YouTube sans quitter ChatLink</strong>Colle un lien de vidéo dans la barre du haut.<br>Les liens YouTube envoyés dans les conversations s'ouvrent aussi ici.</div>`}
+      :`<div class="yt-empty"><div class="yt-orb">${YT_ICON}</div><strong style="display:block;color:var(--fg);font-size:16px;margin-bottom:6px">Regarde YouTube sans quitter ChatLink</strong>Cherche une vidéo ou colle un lien dans la barre du haut.<br>Les liens YouTube envoyés dans les conversations s'ouvrent aussi ici.</div>`}
     ${ytKeyPanel(notice)}
   </div>`;
   ytBindCards(ytBody());
@@ -1894,7 +1893,11 @@ async function ytSearch(q){
     ytBindCards(ytBody());
     ytBody().querySelectorAll(".yt-card").forEach(c=>c.addEventListener("click",()=>{ytBack=()=>ytSearch(q)}));
   }catch(e){
-    ytBody().innerHTML=`<div class="yt-wrap"><div class="yt-info"><strong>La recherche a échoué</strong><p>${esc(String(e.message||e))}</p><div class="yt-actions" style="margin:6px 0 0"><button type="button" class="yt-chip" id="yt-err-back">Retour</button></div></div></div>`;
+    let msg=String(e.message||e);
+    if(/quota/i.test(msg)) msg="La limite de recherches du jour est atteinte. Réessaie demain, ou colle directement un lien YouTube.";
+    else if(/referer|referrer/i.test(msg)) msg="Cette clé ne fonctionne que depuis le site ChatLink en ligne, pas depuis un fichier ouvert en local.";
+    else if(/Failed to fetch|NetworkError/i.test(msg)) msg="Impossible de joindre YouTube. Vérifie ta connexion.";
+    ytBody().innerHTML=`<div class="yt-wrap"><div class="yt-info"><strong>La recherche a échoué</strong><p>${esc(msg)}</p><div class="yt-actions" style="margin:6px 0 0"><button type="button" class="yt-chip" id="yt-err-back">Retour</button></div></div></div>`;
     document.getElementById("yt-err-back").onclick=()=>ytHome();
   }
 }
